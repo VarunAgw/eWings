@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Book Search Engine</title>
+        <meta charset="UTF-8">
+        <meta name="visewport" content="width=device-width, initial-scale=1.0">
+
+        <script src="public/bower_components/handlebars/handlebars.min.js" type="text/javascript"></script>
+        <script src="public/bower_components/jquery/dist/jquery.min.js" type="text/javascript"></script>
+
+        <link rel="stylesheet" href="public/bower_components/bootstrap/dist/css/bootstrap.min.css">
+        <link rel="stylesheet" href="public/style.css">
+    </head>
+    <body>
+        <div>
+            <form class="form-horizontal" name="book_search">
+                <fieldset>
+                    <!-- Form Name -->
+                    <legend>Book Search Engine</legend>
+
+                    <!-- Text input-->
+                    <div class="form-group">
+                        <label class="col-md-4 control-label" for="textinput">Book Name</label>  
+                        <div class="col-md-4">
+                            <input id="q" name="q" type="text" placeholder="Enter book name to search for" class="form-control input-md" required="">
+                        </div>
+                    </div>
+
+                    <!-- Button -->
+                    <div class="form-group">
+                        <label class="col-md-4 control-label" for="singlebutton"></label>
+                        <div class="col-md-4">
+                            <button class="btn btn-primary">Search</button>
+                        </div>
+                    </div>
+
+                </fieldset>
+            </form>
+        </div>
+        <div id="book-results"></div>
+
+        <script id="handlebar-results" type="text/x-handlebars-template">
+            {{#if books.length}}
+                    <h3>Match Found!</h3>
+                    <table border='1'>
+                        <tr>
+                            <th>Title</th>
+                            <th>Description</th>
+                        </tr>
+                        {{#each books}}
+                        <tr>
+                            <td>{{#highlight title ../q}}{{/highlight}}</td>
+                            <td>{{description}}</td>
+                        </tr>
+                        {{/each}}
+                    </table>
+            {{/if}}
+        </script>
+        <script type="text/javascript">
+            Handlebars.registerHelper('highlight', function (content, keyword) {
+                return content.replace(keyword, '<span class="highlighted_text">' + Handlebars.escapeExpression(keyword) + '</span>');
+            });
+
+            $('form[name=book_search]').on('submit', function (e) {
+                e.preventDefault();
+                var q = $('input[name=q]').val();
+
+                $.get('search.json', {q: q}, function (response) {
+                    var template = $('#handlebar-results').html();
+                    var context = response;
+                    context['q'] = q;
+
+                    var templateScript = Handlebars.compile(template);
+                    var html = templateScript(context);
+                    $('#book-results').html(html);
+                });
+            });
+        </script>
+    </body>
+</html>
